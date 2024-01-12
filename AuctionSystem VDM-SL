@@ -1,0 +1,57 @@
+types 
+ String: Char*
+ Bidders: TOKEN
+values 
+ MIN_PRICE : R = 1000 
+state AuctionSystem of 
+ reservePrice : R
+ currentBid : R
+ bidItem : String 
+ startDate : String
+ endDate : String
+ auctionDate : String
+ bidAmount : R
+ stack: Bidders *
+ inv mk-AuctionSystem (r_price, c_bid, b_item, s_date, e_date, a_date, b_amount, b_arr) 
+ (b_amount = nil ∨ b_amount != nil) ∧ (inRange(r_price) ∨ r_price = nil) ∧ (b_item = 
+ nil ∨ b_item ≠ nil) ∧ (c_bid = r_price ∨ c_bid = b_amount ∨ c_bid = nil) ∧ (s_date 
+ = nil ∨ s_date ≠ nil) ∧ (e_date = nil ∨ e_date ≠ nil ∧ (e_date > s_date) ) ∧ (a_date = 
+ nil ∨ a_date ≠ nil) ∧ (b_arr =[] ∨ b_arr ≠ []) 
+ init mk-AuctionSystem (r_price, c_bid, b_item, s_date, e_date, a_date, b_amount, b_arr) 
+ r_price = nil ∧ c_bid = nil ∧ b_item = nil ∧ s_date = nil ∧ e_date = nil ∧ 
+ a_date = nil ∧ b_amount = nil ∧ b_arr = [] 
+end 
+functions 
+ inPriceRange (price : R ) result : bool 
+ pre TRUE 
+ post result ⇔ price >= MIN_PRICE 
+operations 
+ StartAuction (initPrice: R, b_item: String, s_date:String, e_date: String) 
+ ext wr reservePrice: [R] 
+ wr startDate: [String] 
+ wr endDate: [String] 
+ wr currentBid: [String] 
+ wr bidItem: [String]
+ pre (reservePrice = nil ∨ inPriceRange (reservePrice) ∧ startDate = nil ∧ endDate = 
+ nil ∧ bidItem = nil 
+ post (reservePrice = initPrice) ∧ (startDate = s_date ) ∧ (endDate = e_date ) ∧ 
+ (currentBid = reservePrice) ∧ (bidItem = b_item) 
+ PlaceBid (amount: R, date: String, name: Bidders) 
+ ext wr bidAmount: [R] 
+ wr auctionDate: [String] 
+ wr stack: Bidders * 
+ wr currentBid: [ R] 
+ r startDate: [String] 
+ r endDate: [String] 
+ r reservePrice: [R] 
+ pre (amount > reservePrice) ∧ amount > currentBid) ∧ (startDate < auctionDate 
+ < endDate) 
+ post (bidAmount = amount) ∧ (auctionDate = date ) ∧ (stack = [name] ^ 𝑠𝑡𝑎𝑐𝑘) ∧ 
+ (currentBid = bidAmount) 
+CloseAuction (date: String) auctionWinner: String, winningBid : R
+ ext r endDate: [String] 
+ r stack: Bidders* 
+ r currentBid: [R] 
+ r reservePrice: [R] 
+ pre currentBid > reservePrice ∧ bidders ≠ [] ∧ date = endDate 
+ post (stack = tl 𝑠𝑡𝑎𝑐𝑘 ∧ auctionWinner = hd 𝑠𝑡𝑎𝑐𝑘) ∧ (winningBid =currentBid) 
